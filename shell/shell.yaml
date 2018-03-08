@@ -1,0 +1,16 @@
+
+init_config:
+
+instances:
+  - command: "some command | grep here"
+    metric_name: metric_name_2
+    metric_type: gauge
+    tags:
+      - optional_tag1
+
+
+  - command: "some other command"
+    metric_name: metric_name_2
+    metric_type: gauge
+    tags:
+      - optional_tag2
