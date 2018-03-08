@@ -1,0 +1,5 @@
+init_config:
+
+instances:
+  - path: "/tmp/file1"
+  - path: "/tmp/file2"
