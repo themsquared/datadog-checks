@@ -1,0 +1,63 @@
+init_config:
+  # Metric prefix (ex. api.x.y)
+  prefix: api
+
+instances:
+  # Currently only JSON support with JSONPath parsing
+
+  # Example API sampling:
+  - url: https://reqres.in/api/users
+    timeout: 10
+    # Authentication
+    # authentication: basic                   # Will provide support for basic and API key auth
+    # user: foo
+    # pass: bar
+    # api_key: 1234567890
+
+
+    metrics:
+      - users.total: "$.total"                 # Metric is defined using jsonpath (i.e. users[*].posts for something like number of posts a user has created)
+        users.number: "$.total"
+
+    tags:
+      - name: type                        # example tag: api.type = "users"
+        value: users
+        type: string                    # can be jsonpath or string, if JSONPath, will attempt to parse
+      - name: user
+        value: data[*].first_name
+        type: jsonpath
+
+  # Example API sampling:
+  - url: http://pokeapi.co/api/v2/pokemon
+    timeout: 10
+    # Authentication
+    # authentication: basic                   # Will provide support for basic and API key auth
+    # user: foo
+    # pass: bar
+    # api_key: 1234567890
+
+
+    metrics:
+      - pokemon.population: "$.count"                  # Metric is defined using jsonpath (i.e. users[*].posts for something like number of posts a user has created)
+
+    tags:
+      - name: type                                        # example tag: api.type = "employees"
+        value: pokemon
+        type: string                                      # can be jsonpath or string, if JSONPath, will attempt to parse
+
+  - url: http://pokeapi.co/api/v2/ability
+    timeout: 10
+    # Authentication
+    # authentication: basic                   # Will provide support for basic and API key auth
+    # user: foo
+    # pass: bar
+    # api_key: 1234567890
+
+    metrics:
+      - pokemon.abilities: "$.count"                  # Metric is defined using jsonpath (i.e. users[*].posts for something like number of posts a user has created)
+
+    tags:
+      - name: type                                        # example tag: api.type = "employees"
+        value: pokemon
+        type: string                                      # can be jsonpath or string, if JSONPath, will attempt to parse
+
