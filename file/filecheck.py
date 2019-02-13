@@ -30,6 +30,7 @@ class FileCheck(AgentCheck):
                 if mtime != files[path]:
                     self.service_check('file.exists',AgentCheck.OK,tags=["path"+path],message=message)
                 else:
+                    files[path] = mtime
                     self.service_check('file.exists',AgentCheck.CRITICAL,tags=["path"+path],message=message)
 
             self.gauge('file.modified',mtime,["path"+path])
