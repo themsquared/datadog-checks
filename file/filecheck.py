@@ -3,6 +3,9 @@ import os
 
 from checks import AgentCheck
 
+files = {}
+first_run = True
+
 class FileCheck(AgentCheck):
     def check(self, instance):
         if 'path' not in instance:
@@ -19,6 +22,17 @@ class FileCheck(AgentCheck):
             st=os.stat(path)    
             mtime=st.st_mtime
             age=time.time()-mtime
+
+            if first_run:
+                files[path] = mtime
+                first_run = False
+            else
+                if mtime != files[path]:
+                    self.service_check('file.exists',AgentCheck.OK,tags=["path"+path],message=message)
+                else:
+                    files[path] = mtime
+                    self.service_check('file.exists',AgentCheck.CRITICAL,tags=["path"+path],message=message)
+
             self.gauge('file.modified',mtime,["path"+path])
             self.gauge('file.age',age,["path"+path])
         
