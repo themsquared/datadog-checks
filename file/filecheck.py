@@ -25,10 +25,4 @@ class FileCheck(AgentCheck):
         self.service_check('file.exists',result,tags=["path"+path],message=message)
 
 if __name__ == '__main__':
-    check, instances = HTTPCheck.from_yaml('/etc/datadog-agent/conf.d/http.yaml')
-    for instance in instances:
-        print "\nRunning the check against url: %s" % (instance['url'])
-        check.check(instance)
-        if check.has_events():
-            print 'Events: %s' % (check.get_events())
-        print 'Metrics: %s' % (check.get_metrics())
+    print "..."
