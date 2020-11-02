@@ -1,7 +1,7 @@
 init_config:
 
 instances:
-  - min_collection_interval: 60
+  - min_collection_interval: 15
     url: localhost
     port: 12345
     username: USERNAME_HERE
