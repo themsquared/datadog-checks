@@ -1,3 +1,3 @@
 # VoltDB Check
 
-An initial voltdb check for Datadog Agents
+An initial stab at a voltdb agent check for Datadog Agents
