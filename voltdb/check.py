@@ -11,6 +11,9 @@ except ImportError:
 __version__ = "1.0.0"
 __metric_base__ = "voltdb"
 
+# Reserved tag fields
+RESERVED_TAG_WORDS = ["HOST_ID", "SITE_ID", "PARTITION_ID", "CLUSTER_ID", "REMOTE_CLUSTER_ID"]
+
 # VoltDB reported "types"... idk, but this seems arbitrary...
 STRING = 9
 BIGINT = 6
@@ -36,36 +39,30 @@ class VoltDBCheck(AgentCheck):
 		processed = []
 
 		for i in range(len(schema)):
-			if schema[i]['type'] == STRING:
+			if schema[i]['type'] == STRING or schema[i]['name'] in RESERVED_TAG_WORDS:
 				tags.append({"index": i, "name": str(schema[i]['name']).lower()})
 			else:
 				if schema[i]['name'] != 'TIMESTAMP':
 					metrics.append({"index": i, "name": str(__metric_base__+'.'+prefix+'.'+schema[i]['name'].lower())})
 
-		print(tags)
-		print(metrics)
-
 		# Timestamp should ****ALWAYS**** BE at 0
-		# Build metrics with tags
-		for point in data:	
-			console.log(point);			
+		for point in data:
 			for m in metrics: 
-				# Basics...
 				newMetric = {
 					"name": m['name'],
-					"value": point[m['index']],
+					"value": m['index'],
 					"tags": [],
 					"timestamp": point[0]
 					}
 				for t in tags:
-					newMetric['tags'].append(t['name']+':'+point[t['index']])
+					newMetric['tags'].append(str(t['name'])+':'+str(point[t['index']]))
 				processed.append(newMetric)
 		return processed
 
 	# Submit actual metrics
 	def submitMetrics(self, metrics):
 		for m in metrics: 
-			self.gauge(m['name'], m['value'], tags=m['tags'])
+			self.gauge(m['name'], m['value'], tags=m['tags'], timestamp=m['timestamp'])
 
 	# Do CPU Checking
 	def submitCPU(self, url, port, username, password):
@@ -83,11 +80,35 @@ class VoltDBCheck(AgentCheck):
 		this.submitMetrics(metrics)
 		return
 
+	# Do IOSTATS Checking
+	def submitIOStats(self, url, port, username, password):
+		# get url and build data
+		results = requests.get(getURL(url, port, username, password, '@Statistics', '["IOSTATS"]'))
+		metrics = this.buildMetrics(results, "iostats")
+		this.submitMetrics(metrics)
+		return
+
+	# Do Latency Checking
+	def submitLatency(self, url, port, username, password):
+		# get url and build data
+		results = requests.get(getURL(url, port, username, password, '@Statistics', '["LATENCY"]'))
+		metrics = this.buildMetrics(results, "latency")
+		this.submitMetrics(metrics)
+		return
+
 	# Do Index Checking
 	def submitIndex(self, url, port, username, password):
 		# get url and build data
 		results = requests.get(getURL(url, port, username, password, '@Statistics', '["INDEX"]'))
 		metrics = this.buildMetrics(results, "indexes")
+		this.submitMetrics(metrics)
+		return
+
+	# Do Planner Checking
+	def submitPlanner(self, url, port, username, password):
+		# get url and build data
+		results = requests.get(getURL(url, port, username, password, '@Statistics', '["PLANNER"]'))
+		metrics = this.buildMetrics(results, "planner")
 		this.submitMetrics(metrics)
 		return
 
@@ -139,11 +160,29 @@ class VoltDBCheck(AgentCheck):
         except Exception as e:
         	raise ConfigurationError('There is a Memory collection error for voltdb.d!')
 
-        # Run the Index check...
+        # Run the IOStats check...
+    	try: 
+    		this.submitIOStats(url, port, username, password)
+        except Exception as e:
+        	raise ConfigurationError('There is an IOStats collection error for voltdb.d!')
+
+         # Run the Latency check...
+    	try: 
+    		this.submitLatency(url, port, username, password)
+        except Exception as e:
+        	raise ConfigurationError('There is an Latency collection error for voltdb.d!')
+
+         # Run the Index check...
     	try: 
     		this.submitIndex(url, port, username, password)
         except Exception as e:
         	raise ConfigurationError('There is an Index collection error for voltdb.d!')
+
+        # Run the Planner check...
+    	try: 
+    		this.submitPlanner(url, port, username, password)
+        except Exception as e:
+        	raise ConfigurationError('There is a Planner collection error for voltdb.d!')
 
         # Run the Procedure check...
     	try: 
