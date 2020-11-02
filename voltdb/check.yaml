@@ -1,0 +1,8 @@
+init_config:
+
+instances:
+  - min_collection_interval: 60
+    url: localhost
+    port: 12345
+    username: USERNAME_HERE
+    password: PASSWORD_HERE
